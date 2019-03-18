@@ -3,6 +3,7 @@ package main
 import (
     "bufio"
     "encoding/hex"
+    "flag"
     "log"
     "net"
     "os"
@@ -10,6 +11,8 @@ import (
     "strings"
     "strconv"
 )
+
+var verbose = false
 
 func validate_ip(ip string) (found bool) {
     // regex from https://stackoverflow.com/questions/13145397/regex-for-multicast-ip-address
@@ -61,13 +64,20 @@ func forward(addr_to_listen string, addr_to_send string, datagram_size int) {
         if err != nil {
             log.Fatal("Failed:", err)
         }
-        log.Println("Received from:", src)
-        log.Println(hex.Dump(data_arr[:data_size]))
+        if (verbose) {
+            log.Println("Received from:", src)
+            log.Println(hex.Dump(data_arr[:data_size]))
+        }
         sender.Write(data_arr[:data_size])
     }
 }
 
 func main() {
+    boolPtr := flag.Bool("verbose", false, "make it verbose")
+    flag.Parse()
+    if (*boolPtr) {
+        verbose = true
+    }
     reader := bufio.NewReader(os.Stdin)
     for {
         input, _ := reader.ReadString('\n')
